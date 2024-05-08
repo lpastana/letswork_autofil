@@ -26,4 +26,4 @@ if __name__ == '__main__':
         print(f"Day {day} filled successfully")
 
     time.sleep(1)
-    # browser.close()
+    browser.close()
