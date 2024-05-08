@@ -16,7 +16,6 @@ workadays = "*"
 [scripts]
 gap = "python main.py"
 today = "python main.py --today"
-get_pos = "python pos.py"
 help = "python main.py --help"
 
 [requires]
