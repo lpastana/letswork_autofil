@@ -9,8 +9,15 @@ webdriver-manager = "*"
 pyautogui = "*"
 holidays = "*"
 python-dotenv = "*"
+workadays = "*"
 
 [dev-packages]
+
+[scripts]
+gap = "python main.py"
+today = "python main.py --today"
+get_pos = "python pos.py"
+help = "python main.py --help"
 
 [requires]
 python_version = "3.11"

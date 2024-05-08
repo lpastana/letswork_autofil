@@ -1,9 +1,9 @@
 import os
 import time
-import holidays
 import pyautogui
-from datetime import datetime
+from workadays import workdays
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -14,22 +14,25 @@ from selenium.webdriver.support import expected_conditions as EC
 load_dotenv()
 
 class Browser:
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date, today_flag=False):
         self.base_url = "https://app.letswork.com.br"
         self.username = os.environ.get("USERNAME")
         self.password = os.environ.get("PASSWORD")
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start_date = datetime.strptime(start_date, "%d-%m-%Y").strftime("%d/%m/%Y") if start_date else None
+        self.end_date = datetime.strptime(end_date, "%d-%m-%Y").strftime("%d/%m/%Y") if end_date else None
+        self.today_flag = today_flag
+        self.days_list = self.list_days()
 
     def setup(self):
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+        self.driver = webdriver.Chrome(options=chrome_options, service=Service(ChromeDriverManager().install()))
         self.driver.maximize_window()
         self.driver.get(self.base_url)
 
@@ -37,54 +40,59 @@ class Browser:
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, elem)))
 
     def login(self):
-        self.wait_elem('//input[@name="login"]')
-        self.driver.find_element(By.NAME, "login").send_keys(self.cpf)
-        self.driver.find_element(By.NAME, "senha").send_keys(self.cpf)
+        time.sleep(2)
+        # self.wait_elem('//input[@name="login"]')
+        self.driver.find_element(By.NAME, "login").send_keys(self.username)
+        self.driver.find_element(By.NAME, "senha").send_keys(self.password)
         self.driver.find_element(By.ID, "submit").click()
 
-    def get_holydays(self):
-        return holidays.country_holidays("BR")
+    def list_days(self):
+        if self.today_flag:
+            return [datetime.now().strftime("%d/%m/%Y")]
+        days = []
+        current_date = datetime.strptime(self.start_date, "%d/%m/%Y")
+        while current_date <= datetime.strptime(self.end_date, "%d/%m/%Y"):
+            if workdays.is_workday(current_date) and not workdays.is_holiday(current_date, country="BR"):
+                days.append(current_date.strftime("%d/%m/%Y"))
+            current_date += timedelta(days=1)
+        return days
         
 
     def fill_missing_days(self, date):
+        time.sleep(2)
         self.driver.get(f"{self.base_url}/timesheet/index")
         time.sleep(2)
 
-        sunday_pos = (338, 471)
-        pyautogui.click(sunday_pos)
+        # add day
+        pyautogui.click(x=342, y=402)
 
-        pyautogui.click(x=1056, y=563)
+        pyautogui.click(x=992, y=526)
 
-        time.sleep(2)
+        time.sleep(1)
 
-        start_date_pos = (811, 353)
-        pyautogui.click(start_date_pos)
+        # start date
+        pyautogui.click(x=807, y=318)
         pyautogui.write(date)
 
-        start_hour_pos = (1066, 357)
-        pyautogui.click(start_hour_pos)
+        # start date hour
+        pyautogui.click(x=1066, y=317)
         pyautogui.write("08:00")
 
-        end_date_pos = (812, 404)
-        pyautogui.click(end_date_pos)
+        # end date
+        pyautogui.click(x=814, y=366)
         pyautogui.write(date)
 
-        end_hour_pos = (1065, 407)
-        pyautogui.click(end_hour_pos)
+        # end date hour
+        pyautogui.click(x=1064, y=367)
         pyautogui.write("17:00")
 
-        project_pos = (984, 435)
-        pyautogui.click(project_pos)
+        # project
+        pyautogui.click(x=1000, y=422)
         pyautogui.write("a")
         pyautogui.press("enter")
 
-        confirm_pos = (1270, 548)
-        pyautogui.click(confirm_pos)  
-
-
-    def find_element_by_class(self, class_name):
-        return self.driver.find_element(By.CLASS_NAME, class_name)
+        # task        
+        pyautogui.click(x=1248, y=501)
 
     def close(self):
-        if self.driver:
-            self.driver.close()
+        self.driver.close()
