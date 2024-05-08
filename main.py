@@ -7,7 +7,6 @@ parser = argparse.ArgumentParser(description='Letswork timesheet autofil system'
 parser.add_argument('-s', '--start-date', type=str, help='Start date in format dd-mm-yyyy')
 parser.add_argument('-e', '--end-date', type=str, help='End date in format dd-mm-yyyy')
 parser.add_argument('-t', '--today', help='Fill today timesheet', action='store_true', default=False)
-# parser.add_argument('-h', '--help', help='Show help message', action='help')
 
 args = parser.parse_args()
 
