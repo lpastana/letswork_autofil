@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
-load_dotenv()
+load_dotenv(override=True)
 
 class Browser:
     def __init__(self, start_date, end_date, start_time, end_time,project_name,today_flag=False):
